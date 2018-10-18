@@ -1,0 +1,13 @@
+# required config
+repo_url: https://github.com/ethereum/tests
+tests_dir: ./tests # will be created automatically
+testeth_path: /usr/local/src/aleth/build/test/testeth # must be provided if not in $PATH
+lllc_path: /usr/local/src/solidity/build/lllc/lllc # must be provided if not in $PATH
+
+# optional config
+repo_branch: develop
+
+## test generator settings
+ignored_fields:
+  _info
+  filledWith

@@ -1,0 +1,11 @@
+Blockchain Tests:
+  BlockchainTests/
+  -BlockchainTests/GeneralStateTests/
+General State Tests:
+  BlockchainTests/GeneralStateTests/
+  GeneralStateTests/
+Some Random Collection:
+  VMTests/
+  BasicTests/
+  -BasicTests/difficultyConstantinople.json
+  RLPTests/rlptest.json
