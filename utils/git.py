@@ -1,5 +1,6 @@
-from .files import get_dir
 import git
+
+from .files import get_dir
 
 
 class Progress(git.remote.RemoteProgress):

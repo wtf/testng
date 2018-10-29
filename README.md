@@ -19,6 +19,9 @@ The `config.yaml` file contains the following variables:
 ## Bundles
 Test "bundles" can be defined inside `bundles.yaml`:
  - For each folder, all JSON files inside all subfolders are included
- - Folders starting with `-` will be excluded (along with their subfolders)
+ - Folders starting with `^` will be excluded (along with their subfolders)
  - Individual JSON files can be (in|ex)cluded in the some way
  - For the sake of simplicity, bundles or file paths cannot be nested
+
+## Notes
+ - The script loads tests fillers from an `src/` folder inside the `tests_dir`. This is hard coded inside testeth.

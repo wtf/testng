@@ -1,5 +1,6 @@
-import yaml
 import os
+
+import yaml
 
 config = yaml.safe_load(open("config.yaml"))
 
@@ -24,3 +25,6 @@ if not os.path.exists(config['lllc_path']):
 if not os.path.exists(config['testeth_path']):
     print('testeth could not be found! Please check that testeth exists at config.yaml::testeth_path')
     raise FileNotFoundError(404, 'testeth', 'Please make sure that "testeth_path" in config.yaml points to testeth executable')
+
+# Removing trailing slashes is a way of life
+config['tests_dir'] = config['tests_dir'].rstrip("/")

@@ -1,6 +1,7 @@
 # required config
 repo_url: https://github.com/ethereum/tests
 tests_dir: ./tests # will be created automatically
+# paths of required binaries
 testeth_path: /usr/local/src/aleth/build/test/testeth # must be provided if not in $PATH
 lllc_path: /usr/local/src/solidity/build/lllc/lllc # must be provided if not in $PATH
 
