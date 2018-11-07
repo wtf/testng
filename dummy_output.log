@@ -1,20 +1,50 @@
 New commit(s) found:
 0xdadadadadadadaaaa
-0xbadadabadadadabdab
-0xd000d000d000d000d00
 ----------------------------------
 All Tests:				[download .zip]
 Source changes: [32 files](diff)
 Artefact changes: [11 files](diff)	[download .zip]
 ----------------------------------
 Blockchain Tests:			[download .zip]
-Source changes: 32 files
-Artefact changes: 11 files		[download .zip]
+Source changes: [32 files](diff)
+Artefact changes: [11 files](diff)	[download .zip]
 ----------------------------------
 General State Tests:			[download .zip]
-Source changes: 12 files
-Artefact changes: 5 files		[download .zip]
+Source changes: [12 files](diff)
+Artefact changes: [5 files](diff)	[download .zip]
 ----------------------------------
 Some Random Bundle			[download .zip]
-Source changes: 3 files
+Source changes: [3 files](diff)
 Artefact changes: 0 files		[download .zip]
+-----------------------------------------------------------
+Commit: 0xbadadabadadadabdab
+----------------------------------
+All Tests:
+Source changes: [22 files](diff)
+Artefact changes: [13 files](diff)
+----------------------------------
+Blockchain Tests:
+Source changes: [12 files](diff)
+Artefact changes: [9 files](diff)
+----------------------------------
+General State Tests:
+Source changes: [7 files](diff)
+Artefact changes: [4 files](diff)
+----------------------------------
+Some Random Bundle
+Source changes: [1 files](diff)
+Artefact changes: [1 files](diff)
+-----------------------------------------------------------
+Commit: 0xd000d000d000d000d00
+----------------------------------
+All Tests:
+Source changes: [12 files](diff)
+Artefact changes: [7 files](diff)
+----------------------------------
+Blockchain Tests:
+Source changes: [6 files](diff)
+Artefact changes: [4 files](diff)
+----------------------------------
+Some Random Bundle
+Source changes: [2 files](diff)
+Artefact changes: [2 files](diff)
