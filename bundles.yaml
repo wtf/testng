@@ -1,13 +1,3 @@
-BlockchainTests_But_Not_GeneralStateTests:
-  - BlockchainTests/
-  - ^BlockchainTests/GeneralStateTests
-OnlyGeneralStateTests:
-  - BlockchainTests/GeneralStateTests/
-  - GeneralStateTests/
-SomeRandomCollection:
-  - VMTests/
-  - ^VMTests/vmRandomTest/
-  - VMTests/vmRandomTest/201503102320PYTHONFiller.json
-AllButVMTests:
-  - /
-  - ^VMTests/
+# For help on how to define bundles, take a look at the bundles.yaml.example file.
+AllTests:
+ - /

@@ -7,8 +7,8 @@ lllc_path: /usr/local/src/solidity/build/lllc/lllc # must be provided if not in 
 
 # optional config
 repo_branch: develop
+output_dir: # default: dir that contains config.py
 
 ## test generator settings
 ignored_fields:
-  _info
-  filledWith
+  - _info

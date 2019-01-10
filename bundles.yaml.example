@@ -1,13 +1,16 @@
-BlockchainTests_But_Not_GeneralStateTests:
+BlockchainTestsButNotGeneralStateTests:
   - BlockchainTests/
-  - ^BlockchainTests/GeneralStateTests
+  - ^BlockchainTests/GeneralStateTests # this dir and all contents will be excluded
 OnlyGeneralStateTests:
   - BlockchainTests/GeneralStateTests/
   - GeneralStateTests/
 SomeRandomCollection:
-  - VMTests/
-  - ^VMTests/vmRandomTest/
-  - VMTests/vmRandomTest/201503102320PYTHONFiller.json
+  - VMTests
+  - ^VMTests/vmRandomTest/201503102320PYTHONFiller.json # only this file will be excluded
+RandomVMTests:
+ - VMTests/vmTests
+ - VMTests/vmRandomTest/201503102320PYTHON.json
+ - ^GeneralStateTests/ # doesn't do anything here because it was never included
 AllButVMTests:
-  - /
-  - ^VMTests/
+ - /
+ - ^VMTests/

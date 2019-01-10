@@ -2,20 +2,20 @@ import os
 
 import zipfile
 
-from config import config
-
-def get_dir(path, get_or_create=False):
+def get_dir(path, allow_create=False):
     dir_path = os.path.abspath(os.path.expanduser(path))
     if not os.path.isdir(dir_path):
-        if get_or_create:
+        if allow_create:
             os.makedirs(dir_path)
         else:
             raise FileNotFoundError(dir_path)
     return dir_path
 
+
 def add_to_zip(dest, src, root=""):
     # default to tests_dir from config
     if not root:
+        from config import config
         root = config['tests_dir']
     # get absolute path of root
     root = get_dir(root)

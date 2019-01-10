@@ -9,12 +9,13 @@ class Progress(git.remote.RemoteProgress):
         if not cur_count % 20:
             print(self._cur_line)
 
-def get_repo(path, remote_url="", create_if_not_exists=True):
-    dir_path = get_dir(path, create_if_not_exists)
+
+def get_repo(path, remote_url="", allow_create=False):
+    dir_path = get_dir(path, allow_create)
     try:
         repo = git.Repo(dir_path)
     except (git.exc.InvalidGitRepositoryError, git.exc.NoSuchPathError) as e:
-        if create_if_not_exists:
+        if allow_create:
             if remote_url:
                 repo = clone_repo(remote_url, dir_path)
             else:
@@ -25,11 +26,13 @@ def get_repo(path, remote_url="", create_if_not_exists=True):
         print("Repository found:", dir_path)
     return repo
 
+
 def clone_repo(url, path):
     print("Cloning %s into %s:" % (url, path))
     return git.Repo.clone_from(url, path, progress=Progress())
 
-def get_remote_branch(repo, branch):
+
+def pull_remote_branch(repo, branch):
     # discard changes in the working directory
     repo.head.reset(index=True, working_tree=True)
     # pull the remote branch
