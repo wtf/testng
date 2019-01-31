@@ -4,6 +4,7 @@ import argparse
 import shutil
 import json
 import difflib
+from datetime import datetime
 from collections import OrderedDict
 from io import StringIO
 
@@ -14,42 +15,53 @@ from config import config
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=["fill", "diff"])
+    parser.add_argument('action', choices=["bundle", "diff"])
     args = parser.parse_args()
-    if args.action == "fill":
+    if args.action == "bundle":
         fill_and_bundle()
     else:
         generate_diffs(10)
 
 
 def fill_and_bundle():
-    update_repo()
+    repo = update_repo()
+    # TODO: check last_run
     set_env_vars()
     # convert bundle definitions into filesystem paths
     paths = bundles.paths()
     # get the minimal set of tests to fill
     tests = bundles.tests(paths)
+    tests = {(suite, "") for (suite, singletest) in tests}
     # fill the tests
     fill_tests(tests)
+    hexsha = repo.commit().hexsha
     # and finally, create bundle zips
-    out_dir = files.get_dir(config['output_dir']+"/bundles",
-                            allow_create=True)
-    for (name, paths) in paths.items():
-        name = out_dir + "/" + name + ".zip"
-        for path in paths:
-            files.add_to_zip(name, path)
+    bundles_dir = config['output_dir'] + "/bundles"
+    out_dir = bundles_dir + "/" + hexsha
+    out_dir = files.get_dir(out_dir, allow_create=True)
+
+    for (name, test_paths) in paths.items():
+        bundle_zip = out_dir + "/" + name + ".zip"
+        latest_zip = bundles_dir + "/" + name + ".zip"
+        for path in test_paths:
+            files.add_to_zip(bundle_zip, path)
+        shutil.copy2(bundle_zip, latest_zip)
+
+    write_bundle_html(paths, repo.commit().hexsha)
+    # TODO: update last_run
 
 
 def generate_diffs(n):
     repo = update_repo()
-    commits = list(repo.iter_commits())[:n]
+    commits = list(repo.iter_commits())[n::-1] # [HEAD^n to HEAD]
+    # TODO: check last_run
     # [1, 2, 3, 4...] => [(2, 1), (3, 2), (4, 3)...]
-    for (older, newer) in zip(commits[1:], commits[:-1]):
+    for (older, newer) in zip(commits[:-1], commits[1:]):
         fill_changed(older, newer)
-        _output_diff(older, newer)
+        write_diffs(older, newer)
+    # TODO: update last_run
 
-
-def _output_diff(older, newer):
+def write_diffs(older, newer):
     changed_srcs = _changed_files(older, newer)
     artefacts = [_artefact_path(src) for src in changed_srcs]
     # remove invalid artefacts (returned as None) and duplicates
@@ -63,29 +75,58 @@ def _output_diff(older, newer):
                            "/commits/"+
                            newer.hexsha)
     diff_tables = ""
+    diff_count = 0
+    print("Diffing tests...")
+    # generate diff <table> for all changed artefacts
     for artefact in artefacts:
         old_fn = old_dir + "/" + artefact
         new_fn = new_dir + "/" + artefact
         old_test = _load_test(old_fn)
         new_test = _load_test(new_fn)
+        # count artefacts that have changed
+        if old_test != new_test:
+            diff_count += 1
+        # html diff between older and newer artefacts
         diff_table = difflib.HtmlDiff().make_table(old_test.split(),
                                                    new_test.split(),
                                                    older.hexsha+"<br>"+artefact,
                                                    newer.hexsha+"<br>"+artefact,
                                                    True,
                                                    5)
-        # Hack to fix column widths and text wrapping for output table
+        # hack to fix column widths and text wrapping for output table
         diff_table = diff_table.replace(" nowrap=\"nowrap\"", "")
         diff_table = diff_table.replace("<th ", "<td ")
         diff_table = diff_table.replace("</th>", "</td>")
         diff_table = diff_table.replace("""<td colspan="2" class="diff_header">""", """<td class="diff_header"></td><td class="diff_title">""")
-        
+
         diff_tables = diff_tables + diff_table + "<br>"
-    with open(config['script_dir']+"/templates/diff.html") as diff_template:
-        diff_html = diff_template.read()
-    diff_html = diff_html.replace("%diff_table%", diff_tables)
-    with open(new_dir+"/diff.html", 'w') as diff_output:
-        diff_output.write(diff_html)
+    # write diff html to file
+    with open(config['script_dir']+"/templates/diff.html", 'r') as f:
+        diff_template = f.read()
+    diff_html = diff_template.replace("%diff_table%", diff_tables)
+    with open(new_dir+"/index.html", 'w') as out:
+        out.write(diff_html)
+
+    # add commit details to index file
+    with open(config['script_dir']+"/templates/commit.html") as f:
+        commit_template = f.read()
+    commit_html = commit_template.replace("%commithex%", newer.hexsha)
+    commit_html = commit_html.replace("%nsrc%", str(len(changed_srcs)))
+    commit_html = commit_html.replace("%nart%", str(diff_count))
+    commit_github = config['repo_url'] + "/commit/" + newer.hexsha
+    commit_html = commit_html.replace("%srcdiff%", commit_github)
+    commit_html = commit_html.replace("%artdiff%", "commits/"+newer.hexsha+"/index.html")
+    # read existing index file
+    try:
+        f = open(config['output_dir']+"/index.html", "r")
+        index_html = f.read()
+        f.close()
+    except FileNotFoundError:
+        index_html = ""
+    # prepend and write
+    index_html = commit_html + index_html
+    with open(config['output_dir']+"/index.html", 'w') as out:
+        out.write(index_html)
 
 
 def _copy_changed(older, newer):
@@ -121,7 +162,7 @@ def fill_changed(older, newer):
     if not changed_tests:
         return
     # Fill entire suites because they only contain changed tests
-    changed_tests = {(suite, "") for (suite, singletest) in changed_tests}
+    changed_tests = {(suite.split("/")[0], "") for (suite, singletest) in changed_tests}
     for commit in (older, newer):
         commit_dir = files.get_dir(config['output_dir']+
                                    "/commits/"+commit.hexsha,
@@ -139,7 +180,7 @@ def _artefact_path(path):
     path = path.replace("Filler/", "/").replace("Filler.", ".")
     return path
 
-    
+
 def fill_tests(tests):
     ct = 0
     for (suite, singletest) in tests:
@@ -210,6 +251,36 @@ def _sort_dict(d):
     for (key, value) in out.items():
         out[key] = _sort_dict(value)
     return out
+
+
+def write_bundle_html(paths, hexsha):
+    # generate html
+    with open(config['script_dir']+"/templates/bundles.html", 'r') as f:
+        bundle_template = f.read()
+    bundle_html = bundle_template
+    commit_stamp = "%s (Generated at %s)" % (hexsha,
+                                           datetime.utcnow().replace(microsecond=0))
+    bundle_html = bundle_html.replace("%commit%", commit_stamp)
+    link_template = """%bundlename%: <a href="%bundlelink%">download .zip</a><br />\n"""
+    bundle_links = ""
+    for name in paths:
+        link_html = link_template
+        link_html = link_html.replace("%bundlename%", name)
+        link_html = link_html.replace("%bundlelink%", name+".zip")
+        bundle_links += link_html
+    bundle_html = bundle_html.replace("%bundles%", bundle_links)
+    # read existing bundles file
+    bundles_file = config['output_dir'] + "/bundles/index.html"
+    try:
+        f = open(bundles_file, "r")
+        prev = f.read()
+        f.close()
+    except FileNotFoundError:
+        prev = ""
+    # prepend and write
+    bundles_html = bundle_html + prev
+    with open(bundles_file, 'w') as out:
+        out.write(bundles_html)
 
 
 if __name__ == "__main__":

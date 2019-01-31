@@ -9,8 +9,9 @@ python run.py diff
 ```
 To fill tests and create bundles:
 ```
-python run.py fill
-```# Configuration
+python run.py bundle
+```
+# Configuration
 ## Generator settings
 The `config.yaml` file contains the following variables:
  - `repo_url`: Github URL for repository containing test sources
